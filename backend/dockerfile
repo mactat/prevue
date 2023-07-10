@@ -1,0 +1,19 @@
+ARG GO_VERSION=1.20.4
+ARG ALPINE_VERSION=3.18
+
+FROM golang:${GO_VERSION}-alpine${ALPINE_VERSION} as builder
+
+WORKDIR /app
+COPY go.mod go.sum /app/
+RUN go mod download
+COPY main.go /app/
+COPY pkg /app/pkg
+RUN go build -o prevue /app/main.go
+
+FROM alpine:${ALPINE_VERSION} as release
+
+COPY --from=builder /app/prevue /bin/prevue
+
+EXPOSE 8080
+
+CMD ["prevue"]
