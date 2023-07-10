@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prevue-backend
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: prevue-backend
+  template:
+    metadata:
+      labels:
+        app: prevue-backend
+    spec:
+      containers:
+        - name: prevue-backend
+          image: mactat/prevue-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /api/status/health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/status/readiness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5
+            timeoutSeconds: 1   
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prevue-backend
+  labels:
+    app: prevue-backend
+spec:
+  selector:
+    app: prevue-backend
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
