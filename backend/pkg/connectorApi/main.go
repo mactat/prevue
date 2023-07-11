@@ -1,24 +1,15 @@
 package connectorapi
 
 import (
-	"fmt"
+	"database/sql"
+	db "prevue/pkg/db"
+	types "prevue/pkg/types"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 )
 
 var baseRoute = "/api/connector"
-
-type MetricsData struct {
-	Accuracy float64 `json:"accuracy"`
-	MSE      float64 `json:"mse"`
-}
-
-type connectorData struct {
-	Uid           string      `json:"uid"`
-	ProjectName   string      `json:"projectName"`
-	ConnectorName string      `json:"connectorName"`
-	Metrics       MetricsData `json:"metricsData"`
-}
 
 func Routes(router *gin.Engine) {
 	router.GET(baseRoute, helloHandler)
@@ -30,8 +21,9 @@ func helloHandler(c *gin.Context) {
 }
 
 func metricsHandler(c *gin.Context) {
-	var data connectorData
+	var data types.ConnectorData
 	c.BindJSON(&data)
-	fmt.Println(data)
+	database := c.MustGet("database").(*sql.DB)
+	db.Insert(database, data)
 	c.JSON(200, data)
 }
