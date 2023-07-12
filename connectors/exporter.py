@@ -4,7 +4,12 @@ import requests
 
 class Prevue:
     def __init__(
-        self, connector_name: str, project_name: str, uid: str, url: str, **kwargs,
+        self,
+        connector_name: str,
+        project_name: str,
+        user_id: str,
+        url: str,
+        **kwargs,
     ) -> None:
         """Define the initial variables for connection.
 
@@ -17,9 +22,9 @@ class Prevue:
         super().__init__(**kwargs)
         self.connector_name = connector_name
         self.project_name = project_name
-        self.uid = uid
+        self.user_id = user_id
         self.url = url
-        print('test')
+        print("test")
 
         # NOTE add user name or authenticator
 
@@ -33,25 +38,42 @@ class Prevue:
         """
 
         url = f"http://{self.url}/api/connector/metrics"
-
-        data = {
-            "connectorName": self.connector_name,
-            "metricsData": metrics,
-            "projectName": self.project_name,
-            "uid": self.uid,
+        userData = {
+            "user_id": self.user_id,
+            "email": "kubinsmarta77@gmail.com",
+            "passwoard": "marta1",
         }
 
+        projectData = {"project_name": self.project_name}
+        modelsData = {
+            "model_name": "marta1",
+            "connector": self.connector_name,
+            "architecture": "architecture test",
+            "weights": "weights test",
+        }
+
+        data = {
+            "metricsData": metrics,
+            "userData": userData,
+            "modelsData": modelsData,
+            "projectData": projectData,
+        }
+
+        # print(data)
+
         # get data to the API
-        post_response = requests.post(
+        request_post = requests.post(
             url,
             json=data,
         )
 
+        # print(request_post.json())
         return
+        
 
 class PrevueKerasCallback(Prevue, keras.callbacks.Callback):
-    def __init__(self, connector_name: str, project_name: str, uid: str, url: str):
-        Prevue.__init__(self, connector_name, project_name, uid, url)
+    def __init__(self, connector_name: str, project_name: str, user_id: str, url: str):
+        Prevue.__init__(self, connector_name, project_name, user_id, url)
 
     # def on_train_batch_end(self, batch, logs=None):
     #     self.capture({"batch": batch, "loss": logs["loss"]})
@@ -59,8 +81,14 @@ class PrevueKerasCallback(Prevue, keras.callbacks.Callback):
     # def on_test_batch_end(self, batch, logs=None):
     #     self.capture({"batch": batch, "loss": logs["loss"]})
 
-    # def on_epoch_end(self, epoch, logs=None):
-    #     self.capture({"epoch": epoch, "loss": logs})
-
     def on_epoch_end(self, epoch, logs=None):
-        self.capture({"accuracy": logs["accuracy"], "mse": logs["loss"]})
+        self.capture(
+            {
+                "epoch": epoch,
+                "batch": 1,
+                "loss_name": "loss",
+                "loss_value": logs["loss"],
+                "metrics_name": "accuracy",
+                "metrics_value": logs["accuracy"],
+            }
+        )

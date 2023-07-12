@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	db "prevue/pkg/db"
 	types "prevue/pkg/types"
-
+	"log"
+	"net/http"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
@@ -24,6 +25,11 @@ func metricsHandler(c *gin.Context) {
 	var data types.ConnectorData
 	c.BindJSON(&data)
 	database := c.MustGet("database").(*sql.DB)
-	db.Insert(database, data)
-	c.JSON(200, data)
+	err := db.Insert(database, data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert data into the database"})
+		log.Println("Failed to insert data into the database")
+	}
+	c.JSON(http.StatusOK, data)
+	
 }
