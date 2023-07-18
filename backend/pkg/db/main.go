@@ -53,19 +53,29 @@ func CreateTables(db *sql.DB) {
 	log.Println("Created table Metrics")
 }
 
-func Insert(db *sql.DB, data types.ConnectorData) error {
-	// Insert data into table
-	// _, err := db.Exec("INSERT INTO on_epoch_end (uid, project_name, connector_name, epoch, loss, accuracy) VALUES ($1, $2, $3, $4, $5, $6)", data.User.UserName, data.Project.ProjectName, data.Models.ConnectorName, data.Metrics.Epoch, data.Metrics.LossValue, data.Metrics.MatricsValue)
-	// if err != nil {
-	// 	log.Fatalf("Failed to insert data: %v", err)
-	// }
-	// log.Println("Inserted data...")
-
-	_, err := db.Exec("INSERT INTO Users (user_name, email, passwoard) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT user_name, email  FROM Users WHERE user_name = user_name and email = email)", data.User.UserName, data.User.Email, data.User.Passwoard)
+func SessionData(db *sql.DB, data types.SessionData) (int, error) {
+	_, err := db.Exec("INSERT INTO Users (user_name, email, passwoard) SELECT CAST($1 AS VARCHAR),CAST($2 AS VARCHAR), $3 WHERE NOT EXISTS (SELECT user_name, email  FROM Users WHERE user_name = $1 and email = $2)", data.User.UserName, data.User.Email, data.User.Passwoard)
 	if err != nil {
-		log.Println("Failed to insert data: %v", err)
-		return err
+		log.Printf("Failed to insert data into user table: %v", err)
+		return 0, err
 	}
 	log.Println("Inserted data to user table.")
-	return nil
+
+	modelId := 0
+	err = db.QueryRow("insert into Models (model_name, connector_name, architecture, weights) values ($1, $2, $3, $4) RETURNING model_id;", data.Models.ModelName, data.Models.ConnectorName, data.Models.Architecture, data.Models.Weights).Scan(&modelId)
+	if err != nil {
+		log.Printf("Failed to insert data into model table: %v", err)
+		return 0, err
+	}
+	log.Println("Inserted data to models table.")
+
+	_, err = db.Exec("insert into Projects (project_name, user_id, model_id) select $1, user_id, $3 from users where user_name = $2;", data.Project.ProjectName, data.User.UserName, modelId)
+	if err != nil {
+		log.Printf("Failed to insert data into project table: %v", err)
+		return 0, err
+	}
+	log.Println("Inserted data to project table.")
+
+	return modelId, nil
+
 }

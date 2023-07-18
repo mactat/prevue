@@ -5,28 +5,58 @@ import requests
 class Prevue:
     def __init__(
         self,
+        user_id: str,
+        email: str,
+        passwoard: str,
+        url: str,
         connector_name: str,
         project_name: str,
-        user_id: str,
-        url: str,
-        **kwargs,
+        model_name: str,
+        architecture: str,
+        weights: str,
+    
     ) -> None:
         """Define the initial variables for connection.
-
-        Args:
-            connector_name (str): Connector name.
-            project_name (str): Project name.
-            uid (str): User id.
-            url (str): Url.
         """
-        super().__init__(**kwargs)
+       
+        self.user_id = user_id
+        self.email = email
+        self.passwoard = passwoard
+        self.url = url
         self.connector_name = connector_name
         self.project_name = project_name
-        self.user_id = user_id
-        self.url = url
-        print("test")
+        self.model_name = model_name
+        self.architecture = architecture
+        self.weights = weights
+        self.start_session()
 
-        # NOTE add user name or authenticator
+    def start_session(self):
+        url = f"http://{self.url}/api/connector/session"
+        userData = {
+            "user_id": self.user_id,
+            "email": self.email,
+            "passwoard": self.passwoard,
+        }
+
+        projectData = {"project_name": self.project_name}
+        modelsData = {
+            "model_name": self.model_name,
+            "connector": self.connector_name,
+            "architecture": self.architecture,
+            "weights": self.weights,
+        }
+
+        data = {
+            "userData": userData,
+            "modelsData": modelsData,
+            "projectData": projectData,
+        }
+
+        # get data to the API
+        request_post = requests.post(
+            url,
+            json=data,
+        )
 
     def capture(self, metrics: dict):
         """Capture metrics.
@@ -38,25 +68,9 @@ class Prevue:
         """
 
         url = f"http://{self.url}/api/connector/metrics"
-        userData = {
-            "user_id": self.user_id,
-            "email": "kubinsmarta77@gmail.com",
-            "passwoard": "marta1",
-        }
-
-        projectData = {"project_name": self.project_name}
-        modelsData = {
-            "model_name": "marta1",
-            "connector": self.connector_name,
-            "architecture": "architecture test",
-            "weights": "weights test",
-        }
 
         data = {
             "metricsData": metrics,
-            "userData": userData,
-            "modelsData": modelsData,
-            "projectData": projectData,
         }
 
         # print(data)
@@ -69,11 +83,33 @@ class Prevue:
 
         # print(request_post.json())
         return
-        
+
 
 class PrevueKerasCallback(Prevue, keras.callbacks.Callback):
-    def __init__(self, connector_name: str, project_name: str, user_id: str, url: str):
-        Prevue.__init__(self, connector_name, project_name, user_id, url)
+    def __init__(
+        self,
+        user_id: str,
+        email: str,
+        passwoard: str,
+        url: str,
+        connector_name: str,
+        project_name: str,
+        model_name: str,
+        architecture: str,
+        weights: str,
+    ):
+        Prevue.__init__(
+            self,
+            user_id,
+            email,
+            passwoard,
+            url,
+            connector_name,
+            project_name,
+            model_name,
+            architecture,
+            weights,
+        )
 
     # def on_train_batch_end(self, batch, logs=None):
     #     self.capture({"batch": batch, "loss": logs["loss"]})
