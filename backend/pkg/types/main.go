@@ -13,7 +13,7 @@ type MetricsData struct {
 type UserData struct {
 	UserName  string `json:"user_id"`
 	Email     string `json:"email"`
-	Passwoard string `json:"passwoard"`
+	Password string `json:"password"`
 }
 
 type ProjectData struct {

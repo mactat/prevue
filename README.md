@@ -34,26 +34,46 @@ flowchart LR
 
 ### Database design
 
+This Mermaid diagram represents the database schema with the tables `users`, `projects`, `models`, and `metrics`. The primary keys are denoted with (PK) and foreign keys with (FK). The relationships between the tables are represented by lines connecting them. For example, users can own multiple projects, and each project is associated with a single user through the `user_id` foreign key. Similarly, models are used in multiple projects, and each project can use a single model, connected through the `model_id` foreign key. Users and models can also have interactions with metrics, which are represented by lines connecting them.
+
 ```mermaid
 erDiagram
-    CITY {
-        int city_id
-        string name
-        string state_abbreviation
+    users {
+        user_id(PK) int
+        username  varchar
+        email  varchar
+        password  varchar
     }
-    STATE {
-        string state_abbreviation
-        string name
-        int country_id
+  
+    projects {
+        project_id(PK)  int
+        project_name  varchar
+        user_id(FK)  int
+        model_id(FK)  int
     }
-    COUNTRY {
-        int country_id
-        string name
+
+    models {
+        model_id(PK)  int
+        model_name varchar
+        connector_name varchar
+        architecture text
     }
-    COUNTRY ||--|{ STATE : "Has"
-    STATE ||--|{ CITY : "Has"
-    CITY ||--o| STATE : "Is capital of"
-    CITY ||--o| COUNTRY : "Is capital of"
+  
+    metrics {
+        metric_id(PK) int
+        model_id(FK) int
+        epoch int
+        batch int
+        loss_name  varchar
+        loss_value  float
+        metric_name  varchar
+        metric_value  float
+    }
+    
+    users ||--o{ projects : "own"
+    users ||--|{ metrics : "interact with"
+    models ||--o{ projects : "used in"
+    models ||--|{ metrics : "used in"
 ```
 
 ### Deployment

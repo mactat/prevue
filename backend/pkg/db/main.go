@@ -29,7 +29,7 @@ func Close(db *sql.DB) {
 
 func CreateTables(db *sql.DB) {
 
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS Users (user_id serial PRIMARY KEY, user_name VARCHAR ( 100 ) UNIQUE NOT NULL, email VARCHAR ( 100 ) UNIQUE NOT NULL, passwoard VARCHAR ( 100 ) NOT NULL)")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS Users (user_id serial PRIMARY KEY, user_name VARCHAR ( 100 ) UNIQUE NOT NULL, email VARCHAR ( 100 ) UNIQUE NOT NULL, password VARCHAR ( 100 ) NOT NULL)")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v", err)
 	}
@@ -55,7 +55,7 @@ func CreateTables(db *sql.DB) {
 }
 
 func SessionData(db *sql.DB, data types.SessionData) (int, error) {
-	_, err := db.Exec("INSERT INTO Users (user_name, email, passwoard) SELECT CAST($1 AS VARCHAR),CAST($2 AS VARCHAR), $3 WHERE NOT EXISTS (SELECT user_name, email  FROM Users WHERE user_name = $1 and email = $2)", data.User.UserName, data.User.Email, data.User.Passwoard)
+	_, err := db.Exec("INSERT INTO Users (user_name, email, password) SELECT CAST($1 AS VARCHAR),CAST($2 AS VARCHAR), $3 WHERE NOT EXISTS (SELECT user_name, email  FROM Users WHERE user_name = $1 and email = $2)", data.User.UserName, data.User.Email, data.User.Password)
 	if err != nil {
 		log.Printf("Failed to insert data into user table: %v", err)
 		return 0, err

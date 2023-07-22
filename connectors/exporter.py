@@ -8,19 +8,18 @@ class Prevue:
         self,
         user_id: str,
         email: str,
-        passwoard: str,
+        password: str,
         url: str,
         connector_name: str,
         project_name: str,
         model_name: str,
         architecture: str = None,
     ) -> None:
-        """Define the initial variables for connection.
-        """
-       
+        """Define the initial variables for connection."""
+
         self.user_id = user_id
         self.email = email
-        self.passwoard = passwoard
+        self.password = password
         self.url = url
         self.connector_name = connector_name
         self.project_name = project_name
@@ -32,14 +31,14 @@ class Prevue:
         userData = {
             "user_id": self.user_id,
             "email": self.email,
-            "passwoard": self.passwoard,
+            "password": self.password,
         }
 
         projectData = {"project_name": self.project_name}
         modelsData = {
             "model_name": self.model_name,
             "connector": self.connector_name,
-            "architecture": self.architecture
+            "architecture": self.architecture,
         }
 
         data = {
@@ -60,7 +59,7 @@ class Prevue:
     def capture(self, metrics: dict):
         """Capture metrics.
 
-        Connect to backend and send data through prot specified 
+        Connect to backend and send data through prot specified
         by user.
 
         Args:
@@ -80,14 +79,11 @@ class Prevue:
         )
 
     def capture_weights(self, weights: dict):
-        """Update weights in the end of training. 
-        """
+        """Update weights in the end of training."""
 
         url = f"http://{self.url}/api/connector/weights"
 
-        modelsData = {
-            "weightsData" : weights
-        }
+        modelsData = {"weightsData": weights}
 
         # get data to the API
         requests.post(
@@ -96,13 +92,12 @@ class Prevue:
         )
 
 
-
 class PrevueKerasCallback(Prevue, keras.callbacks.Callback):
     def __init__(
         self,
         user_id: str,
         email: str,
-        passwoard: str,
+        password: str,
         url: str,
         connector_name: str,
         project_name: str,
@@ -112,11 +107,11 @@ class PrevueKerasCallback(Prevue, keras.callbacks.Callback):
             self,
             user_id,
             email,
-            passwoard,
+            password,
             url,
             connector_name,
             project_name,
-            model_name
+            model_name,
         )
 
     def on_train_begin(self, logs=None):
@@ -135,5 +130,3 @@ class PrevueKerasCallback(Prevue, keras.callbacks.Callback):
                 "metrics_value": logs["accuracy"],
             }
         )
-
-
