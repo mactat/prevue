@@ -16,8 +16,7 @@ var baseRoute = "/api/connector"
 func Routes(router *gin.Engine) {
 	router.GET(baseRoute, helloHandler)
 	router.POST(baseRoute+"/session", sessionHandler)
-	// router.POST(baseRoute+"/metrics", usersHandler)
-	// router.POST(baseRoute+"/models", modelsHandler)
+	router.POST(baseRoute+"/metrics", metricsHandler)
 }
 
 func helloHandler(c *gin.Context) {
@@ -25,10 +24,11 @@ func helloHandler(c *gin.Context) {
 }
 
 func sessionHandler(c *gin.Context) {
-	var data types.SessionData
-	c.BindJSON(&data)
+	var dataSession types.SessionData
+
+	c.BindJSON(&dataSession)
 	database := c.MustGet("database").(*sql.DB)
-	modelId, err := db.SessionData(database, data)
+	modelId, err := db.SessionData(database, dataSession)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert session data into the database"})
 		log.Println("Failed to insert session data into the database")
@@ -36,11 +36,18 @@ func sessionHandler(c *gin.Context) {
 	log.Println(modelId)
 	c.JSON(http.StatusOK, modelId)
 
-	// err = db.InsertSessionProject(database, data)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert session data into the database"})
-	// 	log.Println("Failed to insert session data into the database")
-	// }
-	// c.JSON(http.StatusOK, data)
+}
+
+func metricsHandler(c *gin.Context) {
+	var dataMetrics types.SessionMetrics
+	c.BindJSON(&dataMetrics)
+	database := c.MustGet("database").(*sql.DB)
+
+	err := db.MetricsData(database, dataMetrics)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert metrics data into the database"})
+		log.Println("Failed to insert metrics data into the database")
+	}
+	c.JSON(http.StatusOK, err)
 
 }

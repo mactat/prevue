@@ -1,12 +1,13 @@
 package types
 
 type MetricsData struct {
-	Epoch        int64  `json:"epoch"`
-	Batch        int64  `json:"batch"`
-	LossName     string `json:"loss_name"`
-	LossValue    string `json:"loss_value"`
-	MatricsName  string `json:"metrics_name"`
-	MatricsValue string `json:"metrics_value"`
+	ModelId      int64   `json:"model_id"`
+	Epoch        int64   `json:"epoch"`
+	Batch        int64   `json:"batch"`
+	LossName     string  `json:"loss_name"`
+	LossValue    float64 `json:"loss_value"`
+	MatricsName  string  `json:"metrics_name"`
+	MatricsValue float64 `json:"metrics_value"`
 }
 
 type UserData struct {
@@ -23,7 +24,6 @@ type ModelsData struct {
 	ModelName     string `json:"model_name"`
 	ConnectorName string `json:"connector"`
 	Architecture  string `json:"architecture"`
-	Weights       string `json:"weights"`
 }
 
 type SessionData struct {

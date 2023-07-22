@@ -1,4 +1,5 @@
 import keras
+from datetime import datetime
 import requests
 
 
@@ -12,9 +13,7 @@ class Prevue:
         connector_name: str,
         project_name: str,
         model_name: str,
-        architecture: str,
-        weights: str,
-    
+        architecture: str = None,
     ) -> None:
         """Define the initial variables for connection.
         """
@@ -27,8 +26,6 @@ class Prevue:
         self.project_name = project_name
         self.model_name = model_name
         self.architecture = architecture
-        self.weights = weights
-        self.start_session()
 
     def start_session(self):
         url = f"http://{self.url}/api/connector/session"
@@ -42,8 +39,7 @@ class Prevue:
         modelsData = {
             "model_name": self.model_name,
             "connector": self.connector_name,
-            "architecture": self.architecture,
-            "weights": self.weights,
+            "architecture": self.architecture
         }
 
         data = {
@@ -57,11 +53,15 @@ class Prevue:
             url,
             json=data,
         )
+        self.model_id = request_post.json()
+
+        print(f"Model id {self.model_id}")
 
     def capture(self, metrics: dict):
         """Capture metrics.
 
-        Connect to backend and send data through prot specified by user.
+        Connect to backend and send data through prot specified 
+        by user.
 
         Args:
             metrics (dict): Metrics defined in the dict format.
@@ -73,16 +73,28 @@ class Prevue:
             "metricsData": metrics,
         }
 
-        # print(data)
-
         # get data to the API
-        request_post = requests.post(
+        requests.post(
             url,
             json=data,
         )
 
-        # print(request_post.json())
-        return
+    def capture_weights(self, weights: dict):
+        """Update weights in the end of training. 
+        """
+
+        url = f"http://{self.url}/api/connector/weights"
+
+        modelsData = {
+            "weightsData" : weights
+        }
+
+        # get data to the API
+        requests.post(
+            url,
+            json=modelsData,
+        )
+
 
 
 class PrevueKerasCallback(Prevue, keras.callbacks.Callback):
@@ -95,8 +107,6 @@ class PrevueKerasCallback(Prevue, keras.callbacks.Callback):
         connector_name: str,
         project_name: str,
         model_name: str,
-        architecture: str,
-        weights: str,
     ):
         Prevue.__init__(
             self,
@@ -106,20 +116,17 @@ class PrevueKerasCallback(Prevue, keras.callbacks.Callback):
             url,
             connector_name,
             project_name,
-            model_name,
-            architecture,
-            weights,
+            model_name
         )
 
-    # def on_train_batch_end(self, batch, logs=None):
-    #     self.capture({"batch": batch, "loss": logs["loss"]})
-
-    # def on_test_batch_end(self, batch, logs=None):
-    #     self.capture({"batch": batch, "loss": logs["loss"]})
+    def on_train_begin(self, logs=None):
+        self.architecture = str(self.model.to_json())
+        self.start_session()
 
     def on_epoch_end(self, epoch, logs=None):
         self.capture(
             {
+                "model_id": self.model_id,
                 "epoch": epoch,
                 "batch": 1,
                 "loss_name": "loss",
@@ -128,3 +135,5 @@ class PrevueKerasCallback(Prevue, keras.callbacks.Callback):
                 "metrics_value": logs["accuracy"],
             }
         )
+
+

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	types "prevue/pkg/types"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -34,7 +35,7 @@ func CreateTables(db *sql.DB) {
 	}
 	log.Println("Created table Users")
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS Models (model_id serial PRIMARY KEY, model_name TEXT NOT NULL, connector_name TEXT NOT NULL, architecture bytea, weights bytea)")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS Models (model_id serial PRIMARY KEY, model_name TEXT NOT NULL, connector_name TEXT NOT NULL, architecture text)")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v", err)
 	}
@@ -46,7 +47,7 @@ func CreateTables(db *sql.DB) {
 	}
 	log.Println("Created table Projects")
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS Metrics (metric_id serial PRIMARY KEY, model_id INT NOT NULL, epoch INT, batch INT, loss_name TEXT, loss_value FLOAT, metric_name TEXT, metric_value FLOAT, FOREIGN KEY (model_id) REFERENCES Models (model_id))")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS Metrics (metric_id serial PRIMARY KEY, model_id INT NOT NULL, epoch INT, batch INT, loss_name TEXT, loss_value FLOAT, metric_name TEXT, metric_value FLOAT, timestamp TIMESTAMPTZ, FOREIGN KEY (model_id) REFERENCES Models (model_id))")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v", err)
 	}
@@ -62,7 +63,7 @@ func SessionData(db *sql.DB, data types.SessionData) (int, error) {
 	log.Println("Inserted data to user table.")
 
 	modelId := 0
-	err = db.QueryRow("insert into Models (model_name, connector_name, architecture, weights) values ($1, $2, $3, $4) RETURNING model_id;", data.Models.ModelName, data.Models.ConnectorName, data.Models.Architecture, data.Models.Weights).Scan(&modelId)
+	err = db.QueryRow("insert into Models (model_name, connector_name, architecture) values ($1, $2, $3) RETURNING model_id;", data.Models.ModelName, data.Models.ConnectorName, data.Models.Architecture).Scan(&modelId)
 	if err != nil {
 		log.Printf("Failed to insert data into model table: %v", err)
 		return 0, err
@@ -78,4 +79,15 @@ func SessionData(db *sql.DB, data types.SessionData) (int, error) {
 
 	return modelId, nil
 
+}
+
+func MetricsData(db *sql.DB, data types.SessionMetrics) error {
+	_, err := db.Exec("INSERT INTO Metrics (model_id, epoch, batch, loss_name, loss_value, metric_name, metric_value, timestamp) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", data.Metrics.ModelId, data.Metrics.Epoch, data.Metrics.Batch, data.Metrics.LossName, data.Metrics.LossValue, data.Metrics.MatricsName, data.Metrics.MatricsValue, time.Now().UTC())
+	if err != nil {
+		log.Printf("Failed to insert data into metrics table: %v", err)
+		return err
+	}
+	log.Println("Inserted data to metrics table.")
+
+	return nil
 }
