@@ -36,6 +36,8 @@ flowchart LR
 
 This Mermaid diagram represents the database schema with the tables `users`, `projects`, `models`, and `metrics`. The primary keys are denoted with (PK) and foreign keys with (FK). The relationships between the tables are represented by lines connecting them. For example, users can own multiple projects, and each project is associated with a single user through the `user_id` foreign key. Similarly, models are used in multiple projects, and each project can use a single model, connected through the `model_id` foreign key. Users and models can also have interactions with metrics, which are represented by lines connecting them.
 
+Note that the timestamp is defined in UTC. 
+
 ```mermaid
 erDiagram
     users {
@@ -68,6 +70,7 @@ erDiagram
         loss_value  float
         metric_name  varchar
         metric_value  float
+        timestamp  date
     }
     
     users ||--o{ projects : "own"
