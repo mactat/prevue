@@ -142,10 +142,13 @@ tilt down
 from prevue import PrevueKerasCallback
 
 callback = PrevueKerasCallback(
+    user_id="test",
+    url="localhost:8080",
+    email="test@gmail.com",
+    password="test1",
     connector_name="keras",
     project_name="test",
-    uid="test",
-    url="http://localhost:8080"
+    model_name="modeltest"
 )
 
 model.fit(x_train, y_train, epochs=5, callbacks=[callback])

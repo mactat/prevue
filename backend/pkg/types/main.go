@@ -11,8 +11,8 @@ type MetricsData struct {
 }
 
 type UserData struct {
-	UserName  string `json:"user_id"`
-	Email     string `json:"email"`
+	UserName string `json:"user_id"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
