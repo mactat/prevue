@@ -1,4 +1,6 @@
 .csv
-*.venv
+*venv*
 *.pyc
+*gz
+run_examples.sh
 **/__pycache__
