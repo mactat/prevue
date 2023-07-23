@@ -12,3 +12,26 @@ backend[0]['spec']['template']['spec']['containers'][0]['env'][5]['value'] = 'de
 k8s_yaml(encode_yaml_stream(backend))
 k8s_resource('prevue-backend', port_forwards=8080, labels=["core-module"], resource_deps=['database'])
 docker_build('mactat/prevue-backend', './backend', dockerfile='./backend/dockerfile')
+
+# Example
+k8s_yaml('./examples/kubernetes.yaml')
+docker_build('mactat/prevue-example', '.', dockerfile="./examples/dockerfile")
+k8s_resource('prevue-example', labels=["debug-module"])
+
+# button
+
+pod_exec_script = '''
+set -eu
+# get k8s pod name from tilt resource name
+POD_NAME="$(tilt get kubernetesdiscovery prevue-example -ojsonpath='{.status.pods[0].name}')"
+kubectl exec "$POD_NAME" -- python3 /examples/Irys_dataset.py
+'''
+
+load('ext://uibutton', 'cmd_button')
+cmd_button('podexec',
+        argv=['sh', '-c', pod_exec_script],
+        resource='prevue-example',
+        icon_name='rocket_launch',
+        text='start',
+)
+

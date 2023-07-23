@@ -82,7 +82,7 @@ model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accur
 
 prevueCallback = PrevueKerasCallback(
     user_id="maciek2",
-    url="localhost:8080",
+    url="prevue-backend:8080",
     email="maciek2@gmail.com",
     password="MaciekToKozak",
     connector_name="keras",
