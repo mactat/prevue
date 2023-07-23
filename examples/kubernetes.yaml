@@ -1,0 +1,19 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prevue-example
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: prevue-example
+  template:
+    metadata:
+      labels:
+        app: prevue-example
+    spec:
+      containers:
+        - name: prevue-example
+          image: mactat/prevue-example:latest
+          imagePullPolicy: IfNotPresent
